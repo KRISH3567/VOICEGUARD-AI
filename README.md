@@ -1,5 +1,7 @@
 # 🛡️ VoiceGuard AI — Real-Time Audio Deepfake & Voice Clone Detection
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-GitHub_Pages-success?logo=github&style=for-the-badge)](https://krish3567.github.io/voiceguard/)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
