@@ -1,0 +1,25 @@
+/* Feature E: review queue and incident case management */
+.review-panel { background: rgba(14, 12, 19, .88); border: 1px solid var(--line, #34303d); border-radius: 12px; padding: 24px; margin-top: 24px; }
+.review-toolbar { display:flex; align-items:center; gap:10px; margin:18px 0; font-size:.85rem; }
+.review-toolbar select, .case-form select, .case-form input, .case-form textarea, #case-note-form textarea { background:#14121a; color:#f1ece3; border:1px solid #34303d; border-radius:5px; padding:8px; font:inherit; }
+.review-table-wrap { overflow-x:auto; }
+.review-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+.review-table th, .review-table td { padding:12px 10px; text-align:left; border-bottom:1px solid #34303d; vertical-align:middle; }
+.review-table th { color:#9a9184; font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; }
+.review-subtext { display:block; color:#9a9184; font-size:.74rem; margin-top:4px; }
+.review-pill, .review-risk { display:inline-block; border-radius:999px; padding:4px 8px; font-size:.7rem; font-family:"IBM Plex Mono", monospace; }
+.review-priority-CRITICAL, .review-priority-HIGH { color:#ff8d7c; border:1px solid #a94a3c; }
+.review-priority-MEDIUM { color:#f2b705; border:1px solid #917314; }
+.review-priority-LOW { color:#7ac495; border:1px solid #407c59; }
+.review-status-OPEN { color:#ff8d7c; border:1px solid #a94a3c; }
+.review-status-IN_REVIEW { color:#f2b705; border:1px solid #917314; }
+.review-status-RESOLVED, .review-status-DISMISSED { color:#7ac495; border:1px solid #407c59; }
+.review-risk-GENUINE { color:#7ac495; }.review-risk-SUSPICIOUS { color:#f2b705; }.review-risk-AI_IMPERSONATION { color:#ff8d7c; }
+.review-error { color:#ff8d7c; background:rgba(232,67,43,.1); border:1px solid #a94a3c; border-radius:5px; padding:10px; margin:10px 0; }
+.case-detail { margin-top:20px; border-top:1px solid #34303d; padding-top:18px; }
+.case-detail h3 { margin:0; font-family:"Fraunces", Georgia, serif; font-weight:500; }
+.case-facts { display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin:14px 0 20px; }
+.case-facts span { background:rgba(255,255,255,.03); border-radius:5px; padding:10px; color:#f1ece3; font-size:.82rem; }.case-facts b { display:block; color:#9a9184; font-size:.68rem; text-transform:uppercase; margin-bottom:4px; }
+.case-form { display:grid; grid-template-columns:2fr 1fr 1fr; gap:12px; align-items:end; }.case-form label { display:flex; flex-direction:column; gap:5px; color:#9a9184; font-size:.75rem; }.case-form label:nth-of-type(4) { grid-column:1 / -1; }.case-form button { min-height:38px; }.case-form span { font-size:.78rem; }
+.case-notes { margin-top:22px; }.case-notes h4 { margin:0 0 10px; }.case-notes ul { list-style:none; padding:0; margin:0 0 12px; }.case-notes li { border-left:2px solid #6a79ff; padding:7px 10px; margin:7px 0; background:rgba(255,255,255,.025); font-size:.82rem; }.case-notes small { display:block; color:#9a9184; margin-top:4px; }.case-notes form { display:flex; gap:10px; align-items:flex-start; }.case-notes textarea { flex:1; resize:vertical; }
+@media (max-width: 720px) { .case-facts, .case-form { grid-template-columns:1fr; }.case-form label:nth-of-type(4) { grid-column:auto; }.case-notes form { flex-direction:column; width:100%; } }

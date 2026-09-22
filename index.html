@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoiceGuard AI — verify a voice before you trust it</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="review-queue.css">
+<link rel="stylesheet" href="verification-report.css">
+<link rel="stylesheet" href="redesign.css">
+<script src="three.min.js"></script>
+</head>
+<body>
+
+<div id="threejs-canvas-container" class="bg-signal" aria-hidden="true"></div>
+<div class="cyber-grid-layer" aria-hidden="true"></div>
+<script src="bg-signal.js"></script>
+
+<div class="page">
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="logo.png" alt="" class="brand-mark">
+      <span class="brand-name">VoiceGuard</span>
+    </div>
+    <nav class="topbar-nav">
+      <a href="#analytics-panel" class="topbar-link">Risk Trends &amp; Analytics</a>
+    </nav>
+    <div class="backend-status" id="backend-status">
+      <span class="dot" id="backend-dot"></span>
+      <span id="backend-text">Checking backend…</span>
+    </div>
+    <div class="api-key-control" style="display:none">
+      <label for="api-key-input">Enter API key</label>
+      <input id="api-key-input" type="password" autocomplete="off" placeholder="Session-only key">
+      <span id="api-key-status" class="review-error" hidden></span>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <section class="intro info-rail">
+      <h1>Verify a voice before you trust it.</h1>
+      <p>Record a clip or upload one. VoiceGuard listens for the acoustic signature of AI voice cloning and gives you an Impersonation Risk Score before you approve a transfer or a request.</p>
+
+      <div class="gauge" aria-hidden="false">
+        <div class="gauge-bar">
+          <span class="gauge-seg gauge-seg-good" style="flex-grow:39"></span>
+          <span class="gauge-seg gauge-seg-warn" style="flex-grow:35"></span>
+          <span class="gauge-seg gauge-seg-bad" style="flex-grow:26"></span>
+        </div>
+        <div class="gauge-ticks">
+          <span>0</span><span>40</span><span>75</span><span>100</span>
+        </div>
+        <ul class="gauge-legend">
+          <li><span class="swatch swatch-good"></span>Genuine — cleared automatically</li>
+          <li><span class="swatch swatch-warn"></span>Suspicious — held for review</li>
+          <li><span class="swatch swatch-bad"></span>AI impersonation — blocked</li>
+        </ul>
+      </div>
+
+      <div class="info-rail-card">
+        <span class="info-rail-kicker">A safer decision layer</span>
+        <h2>Clarity before action.</h2>
+        <div class="info-rail-point"><span class="info-rail-number">01</span><span><strong>Detect</strong><small>Acoustic and language signals are checked together.</small></span></div>
+        <div class="info-rail-point"><span class="info-rail-number">02</span><span><strong>Explain</strong><small>Evidence is visible, not hidden behind a single score.</small></span></div>
+        <div class="info-rail-point"><span class="info-rail-number">03</span><span><strong>Respond</strong><small>Use the action playbook before approving a request.</small></span></div>
+      </div>
+      <p class="privacy-note"><span class="privacy-dot"></span>Audio is analyzed, not archived. Reports retain metadata only.</p>
+    </section>
+
+    <section class="panel" id="panel">
+
+      <div class="provider-toggle" id="provider-toggle" role="radiogroup" aria-label="Detection engine">
+        <span class="provider-toggle-label">Detection engine</span>
+        <div class="provider-toggle-buttons">
+          <button type="button" class="provider-btn active" id="provider-local" data-provider="local" role="radio" aria-checked="true">
+            Local model
+          </button>
+          <button type="button" class="provider-btn" id="provider-hive" data-provider="hive" role="radio" aria-checked="false" disabled>
+            Hive API v3
+          </button>
+        </div>
+        <span class="provider-toggle-note" id="provider-note"></span>
+        <span class="provider-toggle-note" id="transcription-note"></span>
+      </div>
+
+      <div class="capture">
+        <div class="scope">
+          <canvas id="wave" width="600" height="120"></canvas>
+        </div>
+        <div class="scope scope-freq">
+          <span class="scope-freq-label">Frequency</span>
+          <canvas id="freq" width="600" height="70"></canvas>
+        </div>
+        <div class="capture-controls">
+          <button id="btn-start" class="btn-record" type="button">
+            <span class="rec-dot"></span> Record
+          </button>
+          <button id="btn-stop" class="btn-stop" type="button" disabled>Stop</button>
+          <span id="timer" class="timer">0:00</span>
+        </div>
+      </div>
+
+      <div class="or-divider"><span>or</span></div>
+
+      <label class="dropzone" for="file-input" id="dropzone">
+        <input type="file" id="file-input" accept=".mp3,.wav" hidden>
+        <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 15V4M12 4L8 8M12 4L16 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 15V17.5C4 18.8807 5.11929 20 6.5 20H17.5C18.8807 20 20 18.8807 20 17.5V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="dropzone-title">Drop an MP3 or WAV here</span>
+        <span class="dropzone-sub">or click to browse</span>
+        <span class="clip-name" id="clip-name" hidden></span>
+      </label>
+
+      <audio class="clip-player" id="clip-player" controls hidden></audio>
+
+      <label class="customer-id-field" for="customer-id-input">Customer ID for optional voice match
+        <input id="customer-id-input" type="text" maxlength="160" placeholder="e.g. account-123">
+      </label>
+      <button id="btn-analyze" class="btn-analyze" disabled>Analyze voice</button>
+
+      <section class="enrollment-panel" id="enrollment-panel" aria-live="polite">
+        <span class="report-panel-kicker">Optional account voiceprint</span>
+        <h2>Enroll customer voice</h2>
+        <p>Use the current recording or uploaded clip as a reference. Only a numeric voiceprint is stored; raw audio is not retained.</p>
+        <label for="enrollment-customer-id">Customer ID
+          <input id="enrollment-customer-id" type="text" maxlength="160" placeholder="e.g. account-123">
+        </label>
+        <button id="btn-enroll-voice" class="feedback-btn" type="button" disabled>Enroll current clip</button>
+        <span id="enrollment-status" class="muted-note"></span>
+      </section>
+
+      <div class="verdict" id="verdict" hidden>
+        <div class="verdict-hero">
+          <div class="risk-ring" aria-label="Impersonation risk score">
+            <svg viewBox="0 0 120 120" role="img">
+              <defs><linearGradient id="risk-ring-gradient" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="var(--good)"/><stop offset="52%" stop-color="var(--warn)"/><stop offset="100%" stop-color="var(--bad)"/></linearGradient></defs>
+              <circle class="risk-ring-track" cx="60" cy="60" r="50"></circle>
+              <circle class="risk-ring-fill" id="risk-ring-fill" cx="60" cy="60" r="50"></circle>
+            </svg>
+            <div class="risk-ring-center"><span class="verdict-score" id="verdict-score">0</span><span class="verdict-score-caption">risk / 100</span></div>
+          </div>
+          <div class="verdict-meta"><span class="verdict-label" id="verdict-label">—</span><span class="verdict-message" id="verdict-message"></span><div class="risk-scale"><span>0 genuine</span><span>40</span><span>75</span><span>100 clone risk</span></div></div>
+        </div>
+        <div class="detection-checks" aria-label="Detection checks">
+          <div class="detection-check" id="check-transcript"><span class="check-icon">◉</span><span><b>Speech</b><small id="check-transcript-text">Pending</small></span></div>
+          <div class="detection-check" id="check-keywords"><span class="check-icon">#</span><span><b>Language</b><small id="check-keywords-text">Clear</small></span></div>
+          <div class="detection-check" id="check-pii"><span class="check-icon">!</span><span><b>PII</b><small id="check-pii-text">Clear</small></span></div>
+          <div class="detection-check" id="check-voice"><span class="check-icon">♫</span><span><b>Voiceprint</b><small id="check-voice-text">Not enrolled</small></span></div>
+        </div>
+        <div class="verdict-visual-grid">
+          <section class="visual-card"><div class="visual-card-heading"><span>Signal shape</span><small>Evidence profile</small></div><div id="verdict-radar" class="radar-wrap"></div></section>
+          <section class="visual-card"><div class="visual-card-heading"><span>Keyword strength</span><small>Single clip</small></div><div id="verdict-keywords" class="keyword-bars"><p class="visual-empty">No scam-language signals detected</p></div></section>
+        </div>
+        <p class="verdict-transcript" id="verdict-transcript"></p>
+        <p class="verdict-pii" id="verdict-pii" hidden></p>
+        <p class="voice-match-badge" id="voice-match-badge" hidden></p>
+        <p class="verdict-footnote" id="verdict-footnote"></p>
+        <div class="feedback" id="feedback">
+          <span class="feedback-prompt">Was this verdict correct?</span>
+          <button type="button" class="feedback-btn" id="feedback-yes" aria-label="Verdict was correct">Correct</button>
+          <button type="button" class="feedback-btn" id="feedback-no" aria-label="Verdict was wrong">Wrong</button>
+          <span class="feedback-thanks" id="feedback-thanks" hidden>Thanks — noted.</span>
+        </div>
+        <div class="provenance-row">
+          <button type="button" class="link-btn" id="btn-open-provenance" aria-expanded="false" aria-controls="provenance-panel">Clip History &amp; Verification Log</button>
+          <button type="button" class="link-btn" id="btn-generate-report">Generate Verification Report</button>
+          <button type="button" class="link-btn link-btn-flag" id="btn-flag-toggle" hidden>Flag this clip</button>
+        </div>
+      </div>
+
+      <section class="safety-center" id="safety-center" hidden aria-live="polite">
+        <div class="safety-center-header">
+          <div><span class="report-panel-kicker">Customer safety mode</span><h2>Safety Action Center</h2><p>Take a calm, guided pause before you act on a high-stakes request.</p></div>
+          <span class="safety-progress" id="safety-progress">0 / 3 complete</span>
+        </div>
+        <div class="safety-tasks" id="safety-tasks"></div>
+        <div class="safety-footer">
+          <label for="safety-note">Decision note <span>optional</span></label>
+          <textarea id="safety-note" maxlength="1000" rows="2" placeholder="What did the caller ask you to do? Keep this brief and factual."></textarea>
+          <div class="safety-footer-actions"><span class="safety-save-status" id="safety-save-status">Saved to your safety session</span><button type="button" class="feedback-btn" id="safety-escalate">Escalate for review</button></div>
+        </div>
+      </section>
+
+      <!--
+        Inline provenance & history panel (Feature A).
+        This lives in the normal page flow (not an overlay/modal) and is
+        shared by both the single-clip flow above and the batch results
+        table below — "View history" on a batch row opens this same panel.
+        All data comes from the browser's own localStorage; see the
+        client-side provenance store in script.js.
+      -->
+      <section class="provenance-panel" id="provenance-panel" hidden aria-live="polite">
+        <div class="provenance-panel-header">
+          <h2 id="provenance-panel-title">Clip History &amp; Verification Log</h2>
+          <button type="button" class="modal-close" id="provenance-panel-close" aria-label="Close panel">×</button>
+        </div>
+        <div class="provenance-panel-body" id="provenance-body">
+          <p class="muted-note">Analyze a clip to see its history &amp; verification log here.</p>
+        </div>
+      </section>
+
+      <section class="verification-report-panel" id="verification-report-panel" hidden aria-live="polite">
+        <div class="provenance-panel-header">
+          <div>
+            <span class="report-panel-kicker">Shareable trust record</span>
+            <h2 id="report-panel-title">Verification report</h2>
+          </div>
+          <button type="button" class="modal-close" id="report-panel-close" aria-label="Close verification report">×</button>
+        </div>
+        <div class="verification-report-body" id="verification-report-body">
+          <p class="muted-note">Generate a report after analyzing a clip.</p>
+        </div>
+        <div class="verification-report-actions">
+          <button type="button" class="btn-analyze" id="report-copy-link">Copy verification link</button>
+          <a class="feedback-btn" id="report-open-link" href="#" target="_blank" rel="noopener">Open public page</a>
+          <button type="button" class="feedback-btn" id="report-print">Print / save as PDF</button>
+          <button type="button" class="feedback-btn report-pack-btn" id="report-download-pack">Download incident pack</button>
+        </div>
+      </section>
+
+    </section>
+
+    <section class="live-panel">
+      <div class="live-header">
+        <h2>Live call monitor</h2>
+        <p>Share a browser tab that has a call running (e.g. WhatsApp Web) and VoiceGuard checks the voice every 5 seconds while the call continues.</p>
+      </div>
+
+      <div class="live-controls">
+        <button id="btn-live-start" class="btn-record" type="button">
+          <span class="rec-dot"></span> Share tab &amp; start monitoring
+        </button>
+        <button id="btn-live-stop" class="btn-stop" type="button" disabled>Stop monitoring</button>
+        <span id="live-status" class="timer">Not monitoring</span>
+      </div>
+
+      <div class="live-meter" id="live-meter" hidden>
+        <div class="verdict-top">
+          <span class="verdict-score" id="live-score">—</span>
+          <div class="verdict-meta">
+            <span class="verdict-label" id="live-label">Waiting for first chunk…</span>
+          </div>
+        </div>
+        <div class="verdict-bar-track">
+          <div class="verdict-bar-fill" id="live-fill"></div>
+        </div>
+      </div>
+
+      <ul class="live-log" id="live-log"></ul>
+    </section>
+
+    <section class="batch-panel" id="batch-panel">
+      <div class="live-header">
+        <h2>Bulk Scan</h2>
+        <p>Drop several clips at once to screen them together — useful for reviewing a backlog of calls or recordings in one pass.</p>
+      </div>
+
+      <label class="dropzone batch-dropzone" for="batch-file-input" id="batch-dropzone">
+        <input type="file" id="batch-file-input" accept=".mp3,.wav" multiple hidden>
+        <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 15V4M12 4L8 8M12 4L16 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 15V17.5C4 18.8807 5.11929 20 6.5 20H17.5C18.8807 20 20 18.8807 20 17.5V15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="dropzone-title">Drop up to 20 MP3 or WAV files</span>
+        <span class="dropzone-sub">or click to browse</span>
+        <span class="clip-name" id="batch-file-count" hidden></span>
+      </label>
+
+      <button id="btn-batch-analyze" class="btn-analyze" disabled>Run Bulk Scan</button>
+
+      <div class="batch-progress" id="batch-progress" hidden>
+        <div class="verdict-bar-track"><div class="verdict-bar-fill batch-progress-fill" id="batch-progress-fill"></div></div>
+        <span id="batch-progress-text">Analyzing…</span>
+      </div>
+
+      <div class="batch-results" id="batch-results" hidden>
+        <div class="batch-summary" id="batch-summary"></div>
+        <div class="batch-table-wrap">
+          <table class="batch-table">
+            <thead>
+              <tr><th>File</th><th>Risk score</th><th>Status</th><th>History</th><th>Report</th></tr>
+            </thead>
+            <tbody id="batch-table-body"></tbody>
+          </table>
+        </div>
+        <a class="btn-download-report" id="btn-download-report" href="#" download>Download summary report (CSV)</a>
+      </div>
+    </section>
+
+    <section class="analytics-panel" id="analytics-panel" aria-live="polite">
+      <div class="analytics-panel-header">
+        <div>
+          <span class="report-panel-kicker">Operational intelligence</span>
+          <h2>Risk Trends &amp; Analytics</h2>
+          <p>See how your verification activity is changing over time and where risk signals concentrate.</p>
+        </div>
+        <button type="button" class="feedback-btn" id="btn-refresh-analytics">Refresh analytics</button>
+      </div>
+      <div class="metric-cards" id="metric-cards">
+        <div class="metric-card"><span class="metric-card-label">Total checks</span><span class="metric-card-value" id="metric-total">—</span><span class="metric-card-sub" id="metric-total-sub"></span></div>
+        <div class="metric-card warn"><span class="metric-card-label">Suspicious or blocked</span><span class="metric-card-value" id="metric-suspicious-pct">—</span><span class="metric-card-sub" id="metric-suspicious-sub"></span></div>
+        <div class="metric-card"><span class="metric-card-label">Avg risk score</span><span class="metric-card-value" id="metric-avg-risk">—</span><span class="metric-card-sub" id="metric-avg-risk-sub"></span></div>
+        <div class="metric-card bad"><span class="metric-card-label">Likely AI Clone</span><span class="metric-card-value" id="metric-ai-clone">—</span><span class="metric-card-sub" id="metric-ai-clone-sub"></span></div>
+      </div>
+      <div class="analytics-grid">
+        <div class="analytics-section"><h3>Risk trend</h3><p class="analytics-section-sub">Average Impersonation Risk Score per day, last 14 days.</p><div class="chart-wrap"><canvas id="trend-chart" width="900" height="220"></canvas></div><p class="empty-state" id="trend-empty" hidden>No analyses yet — run a scan to start building this trend.</p></div>
+        <div class="analytics-section"><h3>Top detected signals</h3><p class="analytics-section-sub">Phrases most often detected across analyzed clips.</p><div class="batch-table-wrap" id="keyword-table-wrap"><table class="batch-table keyword-table"><thead><tr><th>Signal</th><th>Clips</th><th></th></tr></thead><tbody id="keyword-table-body"></tbody></table></div><p class="empty-state" id="keyword-empty" hidden>No signals detected yet.</p></div>
+      </div>
+      <p class="analytics-error" id="analytics-error" hidden></p>
+    </section>
+
+    <section class="review-panel" id="review-panel">
+      <div class="live-header">
+        <div>
+          <h2>Review queue</h2>
+          <p>Server-backed cases shared across browsers. Flagged clips appear here for triage and resolution.</p>
+        </div>
+        <button type="button" class="feedback-btn" id="btn-refresh-review-queue">Refresh queue</button>
+      </div>
+      <div class="review-toolbar">
+        <label for="review-status-filter">Show</label>
+        <select id="review-status-filter">
+          <option value="">Open and resolved</option>
+          <option value="OPEN">Open</option>
+          <option value="IN_REVIEW">In review</option>
+          <option value="RESOLVED">Resolved</option>
+          <option value="DISMISSED">Dismissed</option>
+        </select>
+        <span class="muted-note" id="review-queue-status">Loading review cases…</span>
+      </div>
+      <div class="review-error" id="review-queue-error" hidden></div>
+      <div class="review-table-wrap" id="review-table-wrap" hidden>
+        <table class="review-table">
+          <thead><tr><th>Case</th><th>Risk</th><th>Priority</th><th>Status</th><th>Updated</th><th></th></tr></thead>
+          <tbody id="review-table-body"></tbody>
+        </table>
+      </div>
+      <p class="muted-note" id="review-queue-empty" hidden>No review cases match this filter.</p>
+      <div class="case-detail" id="case-detail" hidden>
+        <div class="provenance-panel-header">
+          <h3 id="case-detail-title">Incident case</h3>
+          <button type="button" class="modal-close" id="case-detail-close" aria-label="Close case detail">×</button>
+        </div>
+        <div id="case-detail-body"></div>
+      </div>
+    </section>
+
+    <section class="security-audit-panel" id="security-audit-panel" aria-live="polite">
+      <div class="security-audit-header">
+        <div><span class="report-panel-kicker">Cybersecurity control</span><h2>Security Audit &amp; Evidence Integrity</h2><p>Every analysis, report, flag, and safety action is recorded in a tamper-evident hash chain.</p></div>
+        <div class="security-audit-actions"><span class="integrity-badge" id="audit-integrity-badge">Checking integrity…</span><button type="button" class="feedback-btn" id="btn-refresh-audit">Verify trail</button></div>
+      </div>
+      <div class="security-audit-summary"><strong id="audit-event-count">—</strong><span>security events recorded</span><code id="audit-latest-hash">GENESIS</code></div>
+      <div class="audit-table-wrap"><table class="audit-table"><thead><tr><th>Time</th><th>Event</th><th>Actor</th><th>Resource</th><th>Event hash</th></tr></thead><tbody id="audit-table-body"></tbody></table></div>
+      <p class="audit-error" id="audit-error" hidden></p>
+    </section>
+
+  </main>
+
+  <footer class="page-footer">
+    <span>MVP build — audio itself isn't stored; only analysis metadata and history are.</span>
+  </footer>
+
+</div>
+
+<script src="script.js"></script>
+<script src="review-queue.js"></script>
+<script src="analytics.js"></script>
+<script src="security-audit.js"></script>
+</body>
+</html>
