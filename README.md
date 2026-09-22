@@ -1,6 +1,6 @@
 # 🛡️ VoiceGuard AI — Real-Time Audio Deepfake & Voice Clone Detection
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-GitHub_Pages-success?logo=github&style=for-the-badge)](https://krish3567.github.io/voiceguard/)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-GitHub_Pages-success?logo=github&style=for-the-badge)](https://krish3567.github.io/VOICEGUARD-AI/)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
@@ -104,8 +104,8 @@ voiceguard/
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/<your-username>/<your-repo-name>.git
-   cd <your-repo-name>
+   git clone https://github.com/KRISH3567/VOICEGUARD-AI.git
+   cd VOICEGUARD-AI
    ```
 
 2. **Create and activate a virtual environment**:
