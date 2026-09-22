@@ -1,8 +1,0 @@
-title: VoiceGuard AI
-description: Real-Time Audio Deepfake & Voice Clone Detection
-theme: jekyll-theme-primer
-exclude:
-  - backend
-  - "*.py"
-  - requirements.txt
-  - CHANGES.md
