@@ -40,25 +40,25 @@
 
 ```mermaid
 flowchart TD
-    User["User / Audio Stream"] --> Frontend["VoiceGuard Web App (HTML5 / Three.js)"]
+    User(["Audio Input / Stream"]) --> Frontend["VoiceGuard Web App (Three.js Visualizer)"]
     Frontend -->|"POST /api/analyze"| API["FastAPI Backend Server"]
 
-    subgraph Backend Engine
-        API --> AudioProc["Audio Normalizer & Featurizer (librosa/soundfile)"]
-        AudioProc --> LocalModel["Local AASIST3 Spectral Detector"]
+    subgraph BackendEngine ["AI Forensics & Detection Engine"]
+        API --> AudioProc["Audio Preprocessor & Featurizer"]
+        AudioProc --> LocalModel["Local AASIST3 Spectral Model"]
         AudioProc --> CloudEngine["Hive API v3 Fallback Engine"]
-        AudioProc --> STT["Speech-to-Text & Scam Heuristic Scanner"]
-        
+        AudioProc --> STT["Speech-to-Text & Scam Scanner"]
+
         LocalModel --> Scoring["Risk Aggregator & Classifier"]
         CloudEngine --> Scoring
         STT --> Scoring
-        
-        Scoring --> DB[("SQLite Database (voiceguard.db)")]
-        Scoring --> TokenService["Report Snapshot & Token Generator"]
+
+        Scoring --> DB[("SQLite Database")]
+        Scoring --> TokenService["Verification Token Generator"]
     end
 
-    TokenService --> VerifyPage["Public Verification Page (/verify/{token})"]
-    Scoring --> Frontend
+    Scoring -->|"Verdict & Risk Score"| VerdictCard["Client Verdict Card & Provenance Log"]
+    TokenService -->|"Tokenized Link"| VerifyPage["Public Verification Page (/verify/{token})"]
 ```
 
 ---
