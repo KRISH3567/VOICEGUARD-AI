@@ -40,25 +40,22 @@
 
 ```mermaid
 flowchart TD
-    User(["Audio Input / Stream"]) --> Frontend["VoiceGuard Web App (Three.js Visualizer)"]
-    Frontend -->|"POST /api/analyze"| API["FastAPI Backend Server"]
+    User["🎙️ User Audio Input / Stream"] --> Client["💻 VoiceGuard Web Client (HTML5 / Three.js)"]
+    Client -->|"HTTP POST /api/analyze"| API["⚡ FastAPI Backend Gateway"]
+    API --> AudioProc["🎛️ Audio Normalizer & Featurizer"]
+    
+    AudioProc --> LocalModel["🧠 Local AASIST3 Spectral Model"]
+    AudioProc --> CloudEngine["☁️ Hive API v3 Fallback Engine"]
+    AudioProc --> STT["🔍 Speech-to-Text & Scam Heuristics"]
 
-    subgraph BackendEngine ["AI Forensics & Detection Engine"]
-        API --> AudioProc["Audio Preprocessor & Featurizer"]
-        AudioProc --> LocalModel["Local AASIST3 Spectral Model"]
-        AudioProc --> CloudEngine["Hive API v3 Fallback Engine"]
-        AudioProc --> STT["Speech-to-Text & Scam Scanner"]
+    LocalModel --> Scoring["⚖️ Risk Scoring & Verdict Aggregator"]
+    CloudEngine --> Scoring
+    STT --> Scoring
 
-        LocalModel --> Scoring["Risk Aggregator & Classifier"]
-        CloudEngine --> Scoring
-        STT --> Scoring
-
-        Scoring --> DB[("SQLite Database")]
-        Scoring --> TokenService["Verification Token Generator"]
-    end
-
-    Scoring -->|"Verdict & Risk Score"| VerdictCard["Client Verdict Card & Provenance Log"]
-    TokenService -->|"Tokenized Link"| VerifyPage["Public Verification Page (/verify/{token})"]
+    Scoring --> DB[("🗄️ SQLite Database (Audit Log)")]
+    Scoring --> TokenService["🔐 Verification Token Service"]
+    Scoring --> VerdictCard["📋 Client Analysis Verdict & Provenance"]
+    TokenService --> VerifyPage["🌐 Public Verification Page (/verify/{token})"]
 ```
 
 ---
