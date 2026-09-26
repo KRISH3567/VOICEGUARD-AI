@@ -16,7 +16,8 @@ load_dotenv(Path(__file__).with_name(".env"))  # load backend/.env before detect
 
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 
@@ -1124,3 +1125,15 @@ async def submit_feedback(feedback: Feedback):
         raise HTTPException(500, f"Could not save feedback: {exc}") from exc
 
     return {"saved": True}
+
+
+# Serve static frontend assets from repository root
+_FRONTEND_DIR = Path(__file__).resolve().parent.parent
+
+if (_FRONTEND_DIR / "index.html").exists():
+    @app.get("/", include_in_schema=False)
+    def serve_index():
+        return FileResponse(_FRONTEND_DIR / "index.html")
+
+    app.mount("/", StaticFiles(directory=_FRONTEND_DIR, html=True), name="static")
+
